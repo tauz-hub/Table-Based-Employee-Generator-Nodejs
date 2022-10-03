@@ -4,7 +4,7 @@ const leite = new Leite();
 
 let cargos = [];
 
-const file = reader.readFile('./test.xlsx');
+const file = reader.readFile('./base.xlsx');
 const sheets = file.SheetNames;
 
 for (let i = 0; i < sheets.length; i++) {
@@ -25,10 +25,7 @@ const pessoas = [];
 const pessoasQuery = []
 
 function criarPessoas() {
-  let nome;
-  do {
-    nome = leite.pessoa.nome()
-  } while (nome.includes("'"))
+
 
   let obj
   let pass = false;
@@ -38,7 +35,7 @@ function criarPessoas() {
 
     const nomeObj = obj.CARGOS
     if (contador[nomeObj]) {
-      if (contador[nomeObj].count != obj.QUANTIDADEFUNCIONÁRIOS) {
+      if (contador[nomeObj].count != obj.QUANTIDADE_FUNCIONARIOS) {
         contador[nomeObj].count++;
         pass = true;
       }
@@ -49,25 +46,45 @@ function criarPessoas() {
 
   } while (!pass)
 
+  let nome;
+  do {
+    nome = obj.SEXO == "F" ? leite.pessoa.nome({ sexo: 'Feminino' }) : leite.pessoa.nome()
+  } while (nome.includes("'"))
+
   const niveis = ['JUNIOR', 'PLENO', 'SENIOR'];
   const nRndNivel = Math.floor(Math.random() * 3);
 
-  const nivel = obj[niveis[nRndNivel]] ? niveis[nRndNivel] : niveis[0]
+  let nivel = obj[niveis[nRndNivel]] ? niveis[nRndNivel] : niveis[0]
 
   const nomecargo = obj.CARGOS
 
   const salario = obj[nivel]
 
+  const vt = Math.floor(Math.random() * 2) == 0 ? "SIM" : "NÃO";
+  const vc = vt == "NÃO" && Math.floor(Math.random() * 2) == 0 ? "SIM" : "NÃO";
+  const va = obj.VA == "S" ? "SIM" : "NÃO";
+  const vr = obj.VR == "S" ? "SIM" : "NÃO";
+
+  if (obj.VARIACAO == "S") {
+    nivel = "NÃO POSSUI"
+  }
+
   const pessoa = {
     NOME: nome,
     CARGO: nomecargo,
     NIVEL: nivel,
-    SALARIO: salario
+    SALÁRIO: salario,
+    VT: vt,
+    VC: vc,
+    VR: vr,
+    VA: va,
+    "PLANO DE SAÚDE": "SIM",
+    "PLANO ODONTOLÓGICO": "SIM"
   }
   return pessoa
 
 }
-while (pessoas.length < 21) {
+while (pessoas.length < 53) {
 
   const pessoa = criarPessoas()
   pessoasQuery.push(pessoa.nome)
@@ -78,5 +95,5 @@ const ws = reader.utils.json_to_sheet(pessoas)
 
 reader.utils.book_append_sheet(file, ws, "FUNCIONARIOS")
 
-reader.writeFile(file, './test.xlsx')
+reader.writeFile(file, './base.xlsx')
 
